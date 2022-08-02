@@ -1,7 +1,11 @@
-kind: Deployment
 apiVersion: apps/v1
+kind: Deployment
 metadata:
   name: nfs-client-provisioner
+  labels:
+    app: nfs-client-provisioner
+  # replace with namespace where provisioner is deployed
+  namespace: default
 spec:
   replicas: 1
   strategy:
@@ -17,19 +21,19 @@ spec:
       serviceAccountName: nfs-client-provisioner
       containers:
         - name: nfs-client-provisioner
-          image: quay.io/external_storage/nfs-client-provisioner:latest
+          image: k8s.gcr.io/sig-storage/nfs-subdir-external-provisioner:v4.0.2
           volumeMounts:
             - name: nfs-client-root
               mountPath: /persistentvolumes
           env:
             - name: PROVISIONER_NAME
-              value: example.com/nfs
+              value: k8s-sigs.io/nfs-subdir-external-provisioner
             - name: NFS_SERVER
               value: <<NFS Server IP>>
             - name: NFS_PATH
-              value: /srv/nfs/kubedata
+              value: /nfs/kubedata
       volumes:
         - name: nfs-client-root
           nfs:
             server: <<NFS Server IP>>
-            path: /srv/nfs/kubedata
+            path: /nfs/kubedata
